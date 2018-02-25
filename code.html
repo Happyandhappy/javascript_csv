@@ -1,0 +1,91 @@
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+	<title></title>
+
+	<script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+	<script type="text/javascript" src="xlsx.core.min.js"></script>
+	<script type="text/javascript" src="excelplus-2.5.min.js"></script>
+</head>
+
+<body>
+
+	<form id="parseform">
+
+		<div>
+
+			<textarea rows="10" id="parsetext"></textarea>
+
+		</div>
+
+		<button>Submit</button>
+		<button id='excel_button'>Create Excel File</button>
+	</form>
+
+	<code id="preview"></code>
+
+	<script type="text/javascript">
+		var result = [];
+
+		function data_processing(){
+			result = [];
+			var parsestr = $('#parsetext').val();
+			var parserows = parsestr.split('\n');
+
+			for (var i = 0; i < parserows.length; i++) {
+
+				var parserow_srt = parserows[i];
+
+				var startpos = parserow_srt.search(' : ');
+
+				parserow_srt = parserow_srt.substr(startpos + 3, parserow_srt.length + 3 - startpos);
+
+				var fields_ary = parserow_srt.split(',');
+
+				var result_row = {
+
+					"surname" : fields_ary[0], "name" : fields_ary[1], "contact_number" : fields_ary[2], "residential_area" : fields_ary[4] + "," + fields_ary[5]
+
+					};
+
+				result.push(result_row);
+
+			}
+		}
+
+		function writedata(){
+			var result_data = [];
+			result_data.push(["name","surname","contact_number","residential_area"]);
+			for ( var i=0;i<result.length;i++){
+				var unit = [result[i]['name'],result[i]['surname'],result[i]['contact_number'],result[i]['residential_area']];
+				result_data.push(unit);
+			}
+			return result_data;
+		}
+
+		$("#parseform").on('submit', function(e) {
+			e.preventDefault();
+			data_processing();
+			$('#preview').html(JSON.stringify(result));
+		});
+		
+		$('#excel_button').on('click',function(){
+			data_processing();
+			var ep=new ExcelPlus();
+			// console.log(result[0]['surname']);
+			ep.createFile("Book1")
+            .write({ "content": writedata() })
+            .saveAs("demo.xlsx");
+        });
+		
+
+
+	</script>
+
+</body>
+
+</html>
